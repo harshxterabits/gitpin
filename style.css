@@ -4,11 +4,19 @@
 
 #gh-pinned .gh-unpin {
   position: absolute;
-  right: 8px;
+  right: 4px;
   top: 50%;
   transform: translateY(-50%);
-  padding: 2px 4px;
+  /* GitHub's ActionList anchor paints an overlay across the whole row; without
+     a stacking order of our own, every click lands on the link instead. */
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
   border: 0;
+  border-radius: 6px;
   background: none;
   cursor: pointer;
   font-size: 12px;
@@ -20,6 +28,16 @@
 #gh-pinned li:hover .gh-unpin,
 #gh-pinned .gh-unpin:focus {
   opacity: 1;
+}
+
+#gh-pinned .gh-unpin:hover {
+  background: var(--bgColor-neutral-muted, rgba(129, 139, 152, 0.2));
+  color: var(--fgColor-default, #1f2328);
+}
+
+/* keep the label clear of the button */
+#gh-pinned li:has(.gh-unpin) [data-component="ActionList.Item.Label"] {
+  padding-right: 26px;
 }
 
 #gh-pinned.gh-drop {
