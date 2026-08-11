@@ -56,22 +56,26 @@ function build(group, repos) {
   (h.firstElementChild || h).textContent = 'Pinned repositories';
   ul.append(head);
 
-  for (const r of repos) {
+  const makeItem = (icon, label, href) => {
     const li = sampleItem.cloneNode(true);
     const a = li.querySelector('a');
-    a.href = `/${r}`;
+    if (href) a.href = href; else a.removeAttribute('href');
     // full page load — don't hand a synthetic href to GitHub's SPA router
-    a.removeAttribute('data-discover');
-    a.removeAttribute('data-testid');
-    ['id', 'aria-labelledby'].forEach(k => a.removeAttribute(k));
+    ['data-discover', 'data-testid', 'id', 'aria-labelledby']
+      .forEach(k => a.removeAttribute(k));
 
     const visual = li.querySelector('[data-component="ActionList.LeadingVisual"]');
-    visual.textContent = '📌';
+    visual.textContent = icon;
     visual.style.fontSize = '13px';
 
-    const label = li.querySelector('[data-component="ActionList.Item.Label"]');
-    label.removeAttribute('id');
-    label.textContent = r;
+    const lab = li.querySelector('[data-component="ActionList.Item.Label"]');
+    lab.removeAttribute('id');
+    lab.textContent = label;
+    return li;
+  };
+
+  for (const r of repos) {
+    const li = makeItem('📌', r, `/${r}`);
 
     const x = document.createElement('button');
     x.className = 'gh-unpin';
@@ -85,15 +89,12 @@ function build(group, repos) {
   }
 
   if (!repos.length) {
-    const li = sampleItem.cloneNode(true);
-    const a = li.querySelector('a');
-    a.removeAttribute('href');
-    a.removeAttribute('data-discover');
-    a.style.opacity = '0.6';
-    li.querySelector('[data-component="ActionList.LeadingVisual"]').textContent = '📌';
-    li.querySelector('[data-component="ActionList.Item.Label"]').textContent = 'Drag a repo here';
+    const li = makeItem('📌', 'Drag a repo here', null);
+    li.querySelector('a').style.opacity = '0.6';
     ul.append(li);
   }
+
+  ul.append(makeItem('➕', 'New repository', '/new'));
   return box;
 }
 
