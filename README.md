@@ -30,7 +30,8 @@ Open the GitHub sidebar (the ☰ panel). **📌 Pinned repositories** sits right
   page) and drop it on the pinned section.
 - **Pin the repo you're on** — click the GitPin toolbar icon → **📌 Pin**.
 - **Unpin** — hover a pinned repo and click the ✕, or use the popup.
-- **➕ New repository** — last row of the section, straight to `github.com/new`.
+- **New repository** — the ✛ button top-right of the section heading, straight to
+  `github.com/new`.
 
 Drag-to-pin uses the native HTML5 drag API. GitHub's sidebar entries are ordinary `<a>`
 tags, so they are already draggable and already carry their URL — GitPin just listens for
