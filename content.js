@@ -74,6 +74,14 @@ function build(group, repos) {
   return box;
 }
 
+// What the DOM currently claims to be showing, so a stale section is as
+// detectable as a missing one.
+const sig = () => pins.join(',');
+const stale = () => {
+  const box = document.getElementById('gh-pinned');
+  return !box || box.dataset.pins !== sig();
+};
+
 // Synchronous, and it builds the replacement before removing the old section —
 // so a failure anywhere leaves what is already on screen untouched.
 function draw() {
@@ -82,6 +90,7 @@ function draw() {
 
   const box = build(group, pins);
   if (!box) return;
+  box.dataset.pins = sig();
 
   document.querySelectorAll('#gh-pinned, .gh-pinned-divider').forEach(n => n.remove());
   group.parentNode.insertBefore(box, group);
@@ -94,10 +103,15 @@ function draw() {
   }
 }
 
-// Optimistic: memory and DOM update now, storage catches up after.
+const redraw = () => { if (stale()) draw(); };
+
+// Optimistic: memory and DOM update now, storage catches up after. The retries
+// cover GitHub re-rendering the panel over us in the same tick as the drop.
 function setPins(next) {
   pins = next;
   draw();
+  requestAnimationFrame(redraw);
+  setTimeout(redraw, 300);
   safe(() => chrome.storage.sync.set({ [KEY]: pins }));
 }
 
@@ -115,18 +129,20 @@ function repoFromDrop(dt) {
 
 const dropBox = e => e.target.closest?.('#gh-pinned');
 
+// Capture phase: GitHub's dialog gets these events after us, so it cannot
+// stopPropagation() the drop out from under the extension.
 document.addEventListener('dragover', e => {
   const box = dropBox(e);
   if (!box) return;
   e.preventDefault();
   e.dataTransfer.dropEffect = 'copy';
   box.classList.add('gh-drop');
-});
+}, true);
 
 document.addEventListener('dragleave', e => {
   const box = dropBox(e);
   if (box && !box.contains(e.relatedTarget)) box.classList.remove('gh-drop');
-});
+}, true);
 
 document.addEventListener('drop', e => {
   const box = dropBox(e);
@@ -134,12 +150,15 @@ document.addEventListener('drop', e => {
   e.preventDefault();
   box.classList.remove('gh-drop');
   const repo = repoFromDrop(e.dataTransfer);
+  console.debug('GitPin: drop ->', repo);
   if (repo && !pins.includes(repo)) setPins([...pins, repo]);
-});
+}, true);
 
+// Heals anything that removed or reverted our section — GitHub re-rendering
+// the panel, the panel closing and reopening, a failed insert.
 let queued = false;
 new MutationObserver(() => {
-  if (queued || document.getElementById('gh-pinned')) return;
+  if (queued || !stale()) return;
   queued = true;
   requestAnimationFrame(() => { queued = false; draw(); });
 }).observe(document.body, { childList: true, subtree: true });
