@@ -28,6 +28,9 @@ function findGroup() {
   return null;
 }
 
+// octicon-plus, so the button matches the rest of GitHub's iconography
+const PLUS_PATH = '<path d="M7.75 2a.75.75 0 0 1 .75.75V7h4.25a.75.75 0 0 1 0 1.5H8.5v4.25a.75.75 0 0 1-1.5 0V8.5H2.75a.75.75 0 0 1 0-1.5H7V2.75A.75.75 0 0 1 7.75 2Z"></path>';
+
 // Templates survive search mode, where GitHub temporarily removes the heading
 // we clone from.
 let tplItem = null;
@@ -50,10 +53,22 @@ function build(group, repos) {
   box.append(ul);
 
   const head = sampleHead.cloneNode(true);
-  head.querySelectorAll('button, [popover]').forEach(n => n.remove());
+  head.querySelectorAll('[popover]').forEach(n => n.remove()); // tooltips
   const h = head.querySelector('h3');
   if (!h) return null;
   (h.firstElementChild || h).textContent = 'Pinned repositories';
+
+  // GitHub's own search button sits top-right of the heading — reuse it as the
+  // "new repository" button so it inherits the native size and hover state.
+  const btn = head.querySelector('button');
+  if (btn) {
+    ['aria-labelledby', 'data-testid'].forEach(k => btn.removeAttribute(k));
+    btn.setAttribute('aria-label', 'New repository');
+    btn.title = 'New repository';
+    const svg = btn.querySelector('svg');
+    if (svg) svg.innerHTML = PLUS_PATH; else btn.textContent = '+';
+    btn.onclick = e => { e.preventDefault(); location.assign('https://github.com/new'); };
+  }
   ul.append(head);
 
   const makeItem = (icon, label, href) => {
@@ -94,7 +109,6 @@ function build(group, repos) {
     ul.append(li);
   }
 
-  ul.append(makeItem('➕', 'New repository', '/new'));
   return box;
 }
 
