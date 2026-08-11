@@ -97,7 +97,8 @@ function build(group, repos) {
     x.type = 'button';
     x.textContent = '✕';
     x.title = `Unpin ${r}`;
-    x.onclick = e => { e.preventDefault(); e.stopPropagation(); unpin(r); };
+    x.onclick = e => { e.preventDefault(); e.stopImmediatePropagation(); unpin(r); };
+    x.onmousedown = e => e.stopPropagation(); // don't start a drag on the row
     li.append(x);
 
     ul.append(li);
