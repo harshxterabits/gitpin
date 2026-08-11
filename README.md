@@ -18,8 +18,23 @@ Not on the Chrome Web Store — load it unpacked:
 3. Turn on **Developer mode**.
 4. **Load unpacked** → select the cloned folder.
 
-Firefox: works as-is via `about:debugging` → **This Firefox** → **Load Temporary Add-on**
-→ pick `manifest.json`.
+### Firefox
+
+This branch (`firefox`) is the Firefox build. Load it via `about:debugging#/runtime/this-firefox`
+→ **Load Temporary Add-on** → pick `manifest.json`. A temporary add-on is removed when
+Firefox restarts; to keep it, package it and install a signed build from
+[AMO](https://addons.mozilla.org/developers/).
+
+Two things differ from the `main` (Chrome) branch:
+
+- `browser_specific_settings.gecko.id` — Firefox refuses `storage.sync` without an
+  add-on ID, so pins would silently fail to persist. Chrome ignores this key.
+- `popup.js` resolves `browser ?? chrome` — Firefox's `chrome.*` shim is callback-only,
+  while `browser.*` returns promises. Chrome MV3 already has promises on `chrome.*`, so
+  the same line works on both.
+
+`content.js` is untouched between branches; it only uses callback/fire-and-forget APIs
+that behave the same either way.
 
 ## Usage
 

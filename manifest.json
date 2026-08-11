@@ -3,6 +3,12 @@
   "name": "GitPin",
   "version": "1.0",
   "description": "Pin repositories (including private ones) above Top repositories in the GitHub sidebar.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "gitpin@harshpandav.dev",
+      "strict_min_version": "115.0"
+    }
+  },
   "permissions": ["storage"],
   "host_permissions": ["https://github.com/*"],
   "action": { "default_popup": "popup.html" },

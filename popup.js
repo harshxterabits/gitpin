@@ -1,6 +1,10 @@
+// Firefox's chrome.* shim is callback-only; browser.* is the promise API.
+// Chrome MV3 has promises on chrome.* already, so this covers both.
+const api = globalThis.browser ?? globalThis.chrome;
+
 const KEY = 'pinnedRepos';
-const get = async () => (await chrome.storage.sync.get(KEY))[KEY] || [];
-const set = repos => chrome.storage.sync.set({ [KEY]: repos });
+const get = async () => (await api.storage.sync.get(KEY))[KEY] || [];
+const set = repos => api.storage.sync.set({ [KEY]: repos });
 
 const list = document.getElementById('list');
 const empty = document.getElementById('empty');
@@ -38,7 +42,7 @@ async function draw(current) {
   };
 }
 
-chrome.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
+api.tabs.query({ active: true, currentWindow: true }).then(([tab]) => {
   let current = null;
   try {
     const url = new URL(tab.url);
