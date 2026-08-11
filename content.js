@@ -91,6 +91,7 @@ function build(group, repos) {
 
   for (const r of repos) {
     const li = makeItem('📌', r, `/${r}`);
+    li.dataset.repo = r; // marks a reorderable row for the drop handler
 
     const x = document.createElement('button');
     x.className = 'gh-unpin';
@@ -166,31 +167,58 @@ function repoFromDrop(dt) {
   } catch { return null; }
 }
 
-const dropBox = e => e.target.closest?.('#gh-pinned');
+// Where a drop would land: which row it is over, and which half of it, so a
+// drop lands where it looks like it will rather than always appending.
+function dropTarget(e) {
+  const box = e.target.closest?.('#gh-pinned');
+  if (!box) return null;
+
+  const row = e.target.closest('li[data-repo]');
+  if (!row) return { box, row: null, index: pins.length };
+
+  const rect = row.getBoundingClientRect();
+  const before = e.clientY < rect.top + rect.height / 2;
+  const i = [...box.querySelectorAll('li[data-repo]')].indexOf(row);
+  return { box, row, before, index: before ? i : i + 1 };
+}
+
+const clearMarks = () => document.querySelectorAll('.gh-drop, .gh-over-top, .gh-over-bottom')
+  .forEach(n => n.classList.remove('gh-drop', 'gh-over-top', 'gh-over-bottom'));
 
 // Capture phase: GitHub's dialog gets these events after us, so it cannot
 // stopPropagation() the drop out from under the extension.
 document.addEventListener('dragover', e => {
-  const box = dropBox(e);
-  if (!box) return;
+  const t = dropTarget(e);
+  if (!t) return;
   e.preventDefault();
-  e.dataTransfer.dropEffect = 'copy';
-  box.classList.add('gh-drop');
+  e.dataTransfer.dropEffect = 'move';
+  clearMarks();
+  if (t.row) t.row.classList.add(t.before ? 'gh-over-top' : 'gh-over-bottom');
+  else t.box.classList.add('gh-drop');
 }, true);
 
 document.addEventListener('dragleave', e => {
-  const box = dropBox(e);
-  if (box && !box.contains(e.relatedTarget)) box.classList.remove('gh-drop');
+  const t = dropTarget(e);
+  if (t && !t.box.contains(e.relatedTarget)) clearMarks();
 }, true);
 
 document.addEventListener('drop', e => {
-  const box = dropBox(e);
-  if (!box) return;
+  const t = dropTarget(e);
+  if (!t) return;
   e.preventDefault();
-  box.classList.remove('gh-drop');
+  clearMarks();
+
   const repo = repoFromDrop(e.dataTransfer);
-  console.debug('GitPin: drop ->', repo);
-  if (repo && !pins.includes(repo)) setPins([...pins, repo]);
+  console.debug('GitPin: drop ->', repo, 'at', t.index);
+  if (!repo) return;
+
+  // Same path for a new pin and a reorder: drop the old position, then insert
+  // at the target — shifting left first if it came from above.
+  const from = pins.indexOf(repo);
+  const index = from > -1 && from < t.index ? t.index - 1 : t.index;
+  const next = pins.filter(p => p !== repo);
+  next.splice(index, 0, repo);
+  if (next.join(',') !== pins.join(',')) setPins(next);
 }, true);
 
 // Heals anything that removed or reverted our section — GitHub re-rendering
