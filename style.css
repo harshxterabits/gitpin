@@ -1,0 +1,29 @@
+#gh-pinned li {
+  position: relative;
+}
+
+#gh-pinned .gh-unpin {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 2px 4px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  color: var(--fgColor-muted, #656d76);
+}
+
+#gh-pinned li:hover .gh-unpin,
+#gh-pinned .gh-unpin:focus {
+  opacity: 1;
+}
+
+#gh-pinned.gh-drop {
+  outline: 1px dashed var(--fgColor-muted, #656d76);
+  outline-offset: -2px;
+  border-radius: 6px;
+}

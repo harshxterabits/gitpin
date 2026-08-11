@@ -1,0 +1,16 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  body { width: 280px; margin: 0; padding: 12px; font: 13px system-ui, sans-serif; }
+  #toggle { width: 100%; padding: 8px; margin-bottom: 10px; cursor: pointer; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 6px; padding: 3px 0; }
+  li a { flex: 1; color: #0969da; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  li button { border: 0; background: none; cursor: pointer; color: #656d76; }
+  #empty { color: #656d76; }
+</style>
+<button id="toggle" hidden></button>
+<ul id="list"></ul>
+<div id="empty" hidden>No pinned repositories yet.</div>
+<script src="repo.js"></script>
+<script src="popup.js"></script>
