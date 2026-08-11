@@ -10,16 +10,38 @@ const safe = fn => { try { return fn(); } catch (e) { console.debug('GitPin:', e
 
 // The panel's class names are build-hashed, so nothing is hardcoded: we clone
 // GitHub's own "Top repositories" group and rewrite the text/href.
-// ponytail: anchored on the search button's data-testid. If that testid goes,
-// fall back to matching the "Top repositories" heading text.
+// Several anchors, because opening the panel's search swaps the heading for an
+// input and removes the search button — the repo items are what survive.
+// ponytail: all three are data-testids. If GitHub drops them, fall back to
+// matching the "Top repositories" heading text.
+const ANCHORS = [
+  '[data-testid="dynamic-side-panel-items-search-button"]',
+  '[data-testid="dynamic-side-panel-items-item"]',
+  '[data-testid="dynamic-side-panel-items-show-more"]'
+].join(',');
+
 function findGroup() {
-  const btn = document.querySelector('[data-testid="dynamic-side-panel-items-search-button"]');
-  return btn ? btn.closest('[data-component="ActionList.Group"]') : null;
+  for (const el of document.querySelectorAll(ANCHORS)) {
+    const g = el.closest('[data-component="ActionList.Group"]');
+    if (g && g.id !== 'gh-pinned') return g;
+  }
+  return null;
 }
 
+// Templates survive search mode, where GitHub temporarily removes the heading
+// we clone from.
+let tplItem = null;
+let tplHead = null;
+
 function build(group, repos) {
-  const sampleItem = group.querySelector('[data-testid="dynamic-side-panel-items-item"]');
-  const sampleHead = group.querySelector('[data-component="GroupHeadingWrap"]');
+  const liveItem = group.querySelector('[data-testid="dynamic-side-panel-items-item"]')?.closest('li');
+  // must still be a real heading — in search mode the wrapper holds an input
+  const liveHead = group.querySelector('[data-component="GroupHeadingWrap"]:has(h3)');
+  if (liveItem) tplItem = liveItem.cloneNode(true);
+  if (liveHead) tplHead = liveHead.cloneNode(true);
+
+  const sampleItem = tplItem;
+  const sampleHead = tplHead;
   if (!sampleItem || !sampleHead || !group.firstElementChild) return null;
 
   const box = group.cloneNode(false);
@@ -30,11 +52,12 @@ function build(group, repos) {
   const head = sampleHead.cloneNode(true);
   head.querySelectorAll('button, [popover]').forEach(n => n.remove());
   const h = head.querySelector('h3');
+  if (!h) return null;
   (h.firstElementChild || h).textContent = 'Pinned repositories';
   ul.append(head);
 
   for (const r of repos) {
-    const li = sampleItem.closest('li').cloneNode(true);
+    const li = sampleItem.cloneNode(true);
     const a = li.querySelector('a');
     a.href = `/${r}`;
     // full page load — don't hand a synthetic href to GitHub's SPA router
@@ -62,7 +85,7 @@ function build(group, repos) {
   }
 
   if (!repos.length) {
-    const li = sampleItem.closest('li').cloneNode(true);
+    const li = sampleItem.cloneNode(true);
     const a = li.querySelector('a');
     a.removeAttribute('href');
     a.removeAttribute('data-discover');
