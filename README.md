@@ -42,7 +42,9 @@ Open the GitHub sidebar (the ☰ panel). **📌 Pinned repositories** sits right
 "Top repositories".
 
 - **Pin by dragging** — drag any repo out of "Top repositories" (or any repo link on the
-  page) and drop it on the pinned section.
+  page) and drop it on the pinned section. A line shows where it will land; drop on the
+  upper or lower half of a row to insert above or below it.
+- **Reorder** — drag a pinned repo to a new position in the same list.
 - **Pin the repo you're on** — click the GitPin toolbar icon → **📌 Pin**.
 - **Unpin** — hover a pinned repo and click the ✕, or use the popup.
 - **New repository** — the ✛ button top-right of the section heading, straight to
@@ -102,8 +104,7 @@ test.cjs        self-check for the parser — `node test.cjs`
 Plain JavaScript, no build step, no dependencies. Edit a file, hit reload on
 `chrome://extensions`, done. If you touch `repo.js`, run `node test.cjs`.
 
-Deliberately out of scope: reordering pins by dragging, folders/groups, repo search,
-syncing with GitHub stars. Issues and PRs welcome if you disagree — but the appeal of
+Deliberately out of scope: folders/groups, repo search, syncing with GitHub stars. Issues and PRs welcome if you disagree — but the appeal of
 this thing is that it's a handful of small files with no dependencies.
 
 ## License
